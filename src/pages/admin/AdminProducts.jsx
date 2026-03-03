@@ -11,7 +11,7 @@ const AdminProducts = () => {
 
     const initialFormState = {
         id: '', name: '', category: 'Veg Pickles', region: 'Andhra', spiceLevel: 3,
-        image: '/images/placeholder.jpg', price: 0, stock: 100, isBestSeller: false,
+        image: '/images/placeholder.jpg', imageFile: null, price: 0, stock: 100, isBestSeller: false,
         pricePerWeight: { '250g': 150, '500g': 280, '1kg': 550 }
     };
     const [formData, setFormData] = useState(initialFormState);
@@ -82,6 +82,7 @@ const AdminProducts = () => {
             region: product.region,
             spiceLevel: product.spiceLevel,
             image: product.image || '/images/placeholder.jpg',
+            imageFile: null,
             price: product.price || 0,
             stock: 100,
             isBestSeller: product.isBestSeller,
@@ -95,24 +96,29 @@ const AdminProducts = () => {
         e.preventDefault();
         try {
             const weights = Object.entries(formData.pricePerWeight).map(([w, p]) => ({ weight: w, price: p }));
-            const payload = {
-                productData: {
-                    name: formData.name,
-                    category: formData.category,
-                    region: formData.region,
-                    spice_level: formData.spiceLevel,
-                    image_url: formData.image,
-                    shelf_life: '6 Months',
-                    storage: 'Cool dry place',
-                    is_best_seller: formData.isBestSeller
-                },
-                weights
+            const productData = {
+                name: formData.name,
+                category: formData.category,
+                region: formData.region,
+                spice_level: formData.spiceLevel,
+                image_url: formData.image, // fallback
+                shelf_life: '6 Months',
+                storage: 'Cool dry place',
+                is_best_seller: formData.isBestSeller
             };
 
+            const payload = new FormData();
+            payload.append('productData', JSON.stringify(productData));
+            payload.append('weights', JSON.stringify(weights));
+
+            if (formData.imageFile) {
+                payload.append('image', formData.imageFile);
+            }
+
             if (isEditing) {
-                await api.put(`/products/${formData.id}`, payload);
+                await api.put(`/products/${formData.id}`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
             } else {
-                await api.post('/products', payload);
+                await api.post('/products', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
             }
             await fetchProducts();
             setIsModalOpen(false);
@@ -321,8 +327,34 @@ const AdminProducts = () => {
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Image URL</label>
-                                            <input type="text" value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all" />
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Product Image (JPG only, Max 5MB)</label>
+                                            <input
+                                                type="file"
+                                                accept=".jpg,.jpeg"
+                                                onChange={e => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+                                                            alert('Only JPG/JPEG files are allowed');
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
+                                                        if (file.size > 5 * 1024 * 1024) {
+                                                            alert('File size exceeds 5MB limit');
+                                                            e.target.value = '';
+                                                            return;
+                                                        }
+                                                        const previewUrl = URL.createObjectURL(file);
+                                                        setFormData({ ...formData, imageFile: file, image: previewUrl });
+                                                    }
+                                                }}
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all"
+                                            />
+                                            {formData.image && (
+                                                <div className="mt-4 w-32 h-32 rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
+                                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

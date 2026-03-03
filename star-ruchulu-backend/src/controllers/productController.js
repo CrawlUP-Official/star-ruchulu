@@ -48,7 +48,18 @@ const searchForProducts = async (req, res, next) => {
 
 const createProduct = async (req, res, next) => {
     try {
-        const { productData, weights } = req.body;
+        let { productData, weights } = req.body;
+
+        // Parse from FormData strings
+        if (typeof productData === 'string') productData = JSON.parse(productData);
+        if (typeof weights === 'string') weights = JSON.parse(weights);
+
+        if (req.file) {
+            // we store the relative path or absolute path
+            // to make sure it works seamlessly in frontend, we construct the backend url
+            productData.image_url = 'http://localhost:5000/uploads/' + req.file.filename;
+        }
+
         const id = await productService.createProduct(productData, weights);
         res.status(201).json({ success: true, id, message: 'Product created successfully' });
     } catch (error) {
@@ -59,7 +70,15 @@ const createProduct = async (req, res, next) => {
 const updateProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { productData, weights } = req.body;
+        let { productData, weights } = req.body;
+
+        if (typeof productData === 'string') productData = JSON.parse(productData);
+        if (typeof weights === 'string') weights = JSON.parse(weights);
+
+        if (req.file) {
+            productData.image_url = 'http://localhost:5000/uploads/' + req.file.filename;
+        }
+
         await productService.updateProduct(id, productData, weights);
         res.status(200).json({ success: true, message: 'Product updated successfully' });
     } catch (error) {

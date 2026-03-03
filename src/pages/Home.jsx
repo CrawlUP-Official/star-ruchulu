@@ -19,7 +19,7 @@ const Home = () => {
             try {
                 const response = await api.get('/products');
                 // Filter best sellers on client side
-                const sellers = response.data.filter(p => p.isBestSeller).slice(0, 4);
+                const sellers = response.data.filter(p => p.isBestSeller);
                 setBestSellers(sellers);
                 setIsLoading(false);
             } catch (err) {
