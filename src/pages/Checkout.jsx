@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getCart, getCartTotal, clearCart } from '../utils/cartUtils';
-import { CheckCircle, Lock, ShieldCheck, MapPin, Truck } from 'lucide-react';
+import { CheckCircle, Lock, ShieldCheck, MapPin, Truck, AlertCircle } from 'lucide-react';
+import api from '../services/api';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -23,6 +24,7 @@ const Checkout = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderSuccess, setOrderSuccess] = useState(false);
     const [generatedOrderId, setGeneratedOrderId] = useState('');
+    const [submitError, setSubmitError] = useState('');
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -36,52 +38,38 @@ const Checkout = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setSubmitError('');
 
-        // Simulate API call and LocalStorage injection for Admin Panel
-        setTimeout(() => {
-            const orderId = `SR-${Math.floor(1000 + Math.random() * 9000)}-2024`;
-
-            const newOrder = {
-                orderId,
-                customerDetails: { fullName: formData.fullName, phone: formData.phone, email: formData.email },
-                shippingAddress: { address: formData.address, city: formData.city, state: formData.state, pincode: formData.pincode },
-                items: cartItems,
-                subtotal: total,
-                shippingCharge: deliveryCharge,
-                totalAmount: total + deliveryCharge,
-                paymentMethod: formData.paymentMethod,
-                orderStatus: 'Processing',
-                createdAt: new Date().toISOString()
+        try {
+            const payload = {
+                customer_name: formData.fullName,
+                phone: formData.phone,
+                email: formData.email,
+                address: formData.address,
+                city: formData.city,
+                state: formData.state,
+                pincode: formData.pincode,
+                payment_method: formData.paymentMethod,
+                items: cartItems.map(item => ({
+                    product_id: item.id,
+                    weight: item.weight,
+                    quantity: item.quantity
+                }))
             };
 
-            const existingOrders = JSON.parse(localStorage.getItem('sr_admin_orders')) || [];
-            localStorage.setItem('sr_admin_orders', JSON.stringify([newOrder, ...existingOrders]));
+            const response = await api.post('/orders', payload);
 
-            const existingCustomers = JSON.parse(localStorage.getItem('sr_admin_customers')) || [];
-            const customerIndex = existingCustomers.findIndex(c => c.phone === formData.phone);
-
-            if (customerIndex >= 0) {
-                existingCustomers[customerIndex].totalOrders += 1;
-                existingCustomers[customerIndex].totalSpent += (total + deliveryCharge);
-            } else {
-                existingCustomers.push({
-                    name: formData.fullName,
-                    phone: formData.phone,
-                    email: formData.email,
-                    totalOrders: 1,
-                    totalSpent: total + deliveryCharge
-                });
-            }
-            localStorage.setItem('sr_admin_customers', JSON.stringify(existingCustomers));
-
-            setGeneratedOrderId(orderId);
+            setGeneratedOrderId(response.data.order_id);
             setIsSubmitting(false);
             setOrderSuccess(true);
             clearCart();
-        }, 1500);
+        } catch (error) {
+            setSubmitError(error.response?.data?.message || 'Failed to process order. Please try again.');
+            setIsSubmitting(false);
+        }
     };
 
     if (orderSuccess) {
@@ -114,6 +102,16 @@ const Checkout = () => {
                     {/* Checkout Form */}
                     <div className="lg:w-2/3">
                         <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-5 md:p-8 shadow-sm border border-gray-100 space-y-6 md:space-y-8">
+
+                            {submitError && (
+                                <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 flex items-start gap-3">
+                                    <AlertCircle className="shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="font-bold">Checkout Failed</h4>
+                                        <p className="text-sm mt-1">{submitError}</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Contact Info */}
                             <div>

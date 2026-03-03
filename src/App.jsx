@@ -22,6 +22,8 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminCustomers from './pages/admin/AdminCustomers';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
+import AdminContactMessages from './pages/admin/AdminContactMessages';
 import AdminSettings from './pages/admin/AdminSettings';
 
 const Loader = () => (
@@ -44,6 +46,8 @@ function App() {
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="customers" element={<AdminCustomers />} />
+            <Route path="subscriptions" element={<AdminSubscriptions />} />
+            <Route path="contact-messages" element={<AdminContactMessages />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Routes>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Share2, Info, LayoutList, Package, Star } from 'lucide-react';
-import productsData from '../data/products.json';
+import api from '../services/api';
 import { getCart, addToCart, updateQuantity } from '../utils/cartUtils';
 import ProductCard from '../components/ProductCard';
 
@@ -9,6 +9,10 @@ const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [product, setProduct] = useState(null);
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [selectedWeight, setSelectedWeight] = useState('250g');
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
@@ -17,15 +21,33 @@ const ProductDetails = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const foundProduct = productsData.find(p => p.id === id);
-        if (foundProduct) {
-            setProduct(foundProduct);
-            setSelectedWeight('250g');
-            setQuantity(1);
-        } else {
-            navigate('/shop');
-        }
-    }, [id, navigate]);
+        const fetchProductData = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                // Fetch single product
+                const res = await api.get(`/products/${id}`);
+                setProduct(res.data);
+                setSelectedWeight('250g');
+                setQuantity(1);
+
+                // Fetch all products to find related ones
+                const allRes = await api.get('/products');
+                const related = allRes.data.filter(p => p.category === res.data.category && p.id != id).slice(0, 4);
+                setRelatedProducts(related);
+            } catch (err) {
+                if (err.response?.status === 404) {
+                    setError('Product Not Found');
+                } else {
+                    setError(err.response?.data?.message || 'Failed to load product details');
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProductData();
+    }, [id]);
 
     useEffect(() => {
         if (!product) return;
@@ -40,10 +62,32 @@ const ProductDetails = () => {
         return () => window.removeEventListener('cartUpdated', fetchCartItem);
     }, [product, selectedWeight]);
 
-    if (!product) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[var(--color-bg-white)] pt-20 flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-[var(--color-primary-green)] rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
-    const price = product.pricePerWeight[selectedWeight];
-    const relatedProducts = productsData.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+    if (error || !product) {
+        return (
+            <div className="min-h-screen bg-[var(--color-bg-white)] pt-20 flex flex-col items-center justify-center">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center max-w-md">
+                    <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Package size={32} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{error || 'Product Not Found'}</h2>
+                    <p className="text-gray-500 mb-6">The product you are looking for does not exist or has been removed.</p>
+                    <button onClick={() => navigate('/shop')} className="px-6 py-3 bg-[var(--color-primary-green)] text-white rounded-xl font-bold transition-all shadow-md hover:-translate-y-0.5">
+                        Back to Shop
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const price = product.pricePerWeight?.[selectedWeight] || product.price;
 
     const handleAddToCart = () => {
         addToCart(product, quantity, selectedWeight);

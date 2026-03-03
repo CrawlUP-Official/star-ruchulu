@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import productsData from '../data/products.json';
+import api from '../services/api';
 import { Filter, ChevronDown } from 'lucide-react';
 
 const categories = ['All', 'Veg Pickles', 'Non-Veg Pickles', 'Sweets', 'Snacks', 'Fryums', 'Curries', 'Palnadu', 'Rayalaseema', 'Godavari', 'Coastal Andhra'];
@@ -16,6 +16,11 @@ const Shop = () => {
     const [activeSort, setActiveSort] = useState('Recommended');
     const [showFilters, setShowFilters] = useState(false);
 
+    // Backend State
+    const [baseProducts, setBaseProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [category]);
@@ -24,8 +29,22 @@ const Shop = () => {
         setActiveCategory(category || 'All');
     }, [category]);
 
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await api.get('/products');
+                setBaseProducts(res.data);
+                setIsLoading(false);
+            } catch (err) {
+                setError(err.response?.data?.message || 'Failed to load products');
+                setIsLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
     const products = useMemo(() => {
-        let filtered = [...productsData];
+        let filtered = [...baseProducts];
 
         // Search
         if (searchQuery) {
@@ -83,7 +102,7 @@ const Shop = () => {
         }
 
         return filtered;
-    }, [activeCategory, activeSort, searchQuery]);
+    }, [baseProducts, activeCategory, activeSort, searchQuery]);
 
     return (
         <div className="bg-[var(--color-bg-white)] min-h-screen pt-2 md:pt-4 pb-16 md:pb-20">
@@ -168,14 +187,29 @@ const Shop = () => {
 
                     {/* Product Grid */}
                     <div className="lg:w-3/4">
-                        {products.length === 0 ? (
+                        {isLoading ? (
+                            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="animate-pulse bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full">
+                                        <div className="w-full aspect-square bg-gray-200 rounded-xl mb-4"></div>
+                                        <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                                        <div className="mt-auto h-10 w-full bg-gray-200 rounded-xl"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : error ? (
+                            <div className="bg-red-50 text-red-500 p-8 rounded-2xl text-center border border-red-100 font-bold">
+                                {error}
+                            </div>
+                        ) : products.length === 0 ? (
                             <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[400px]">
                                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
                                     <Filter size={40} className="text-gray-400" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-gray-800 mb-2">No products found</h3>
                                 <p className="text-gray-500 mb-6">We couldn't find any items matching your current filters.</p>
-                                <Link to="/shop" className="px-6 py-3 bg-[var(--color-primary-green)] text-white rounded-full font-bold">
+                                <Link to="/shop" onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="px-6 py-3 bg-[var(--color-primary-green)] text-white rounded-full font-bold">
                                     Clear Filters
                                 </Link>
                             </div>

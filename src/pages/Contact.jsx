@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Mail, MapPin, Phone, MessageSquare, Clock } from 'lucide-react';
+import { Mail, MapPin, Phone, MessageSquare, Clock, AlertCircle } from 'lucide-react';
+import api from '../services/api';
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -11,15 +12,21 @@ const Contact = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setTimeout(() => {
+        setSubmitError('');
+        try {
+            await api.post('/contact', formData);
             setIsSubmitting(false);
             setIsSent(true);
             setFormData({ name: '', phone: '', email: '', message: '' });
-        }, 1500);
+        } catch (error) {
+            setSubmitError(error.response?.data?.message || 'Failed to send message. Please try again.');
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -115,6 +122,16 @@ const Contact = () => {
                             <h2 className="text-2xl md:text-3xl font-heading font-bold text-[var(--color-primary-green)] mb-6 md:mb-8 flex items-center gap-3">
                                 Send us a Message
                             </h2>
+
+                            {submitError && (
+                                <div className="mb-6 bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 flex items-start gap-3">
+                                    <AlertCircle className="shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="font-bold">Message Failed</h4>
+                                        <p className="text-sm mt-1">{submitError}</p>
+                                    </div>
+                                </div>
+                            )}
 
                             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">

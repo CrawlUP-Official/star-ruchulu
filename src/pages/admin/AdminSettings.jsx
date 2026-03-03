@@ -1,108 +1,180 @@
 import { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Phone, MessageCircle, MapPin, Truck, LayoutTemplate, CheckCircle2 } from 'lucide-react';
 
 const AdminSettings = () => {
-    const [settings, setSettings] = useState({
-        phone: '+91 98765 43210',
-        email: 'hello@starruchulu.com',
-        address: 'Macherla, Palnadu District, Andhra Pradesh',
-        whatsapp: '+91 98765 43210',
-        freeShippingThreshold: 999
-    });
+    const defaultSettings = {
+        businessPhone: '+91 98765 43210',
+        whatsappNumber: '+91 98765 43210',
+        businessAddress: '1-23, Main Bazaar, Macherla, Palnadu District, Andhra Pradesh - 522426',
+        freeShippingThreshold: '1000',
+        bannerText: '✨ Free Shipping on orders above ₹1000! Authentic items directly from Palnadu.'
+    };
 
-    const [saved, setSaved] = useState(false);
+    const [settings, setSettings] = useState(defaultSettings);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     useEffect(() => {
         const stored = localStorage.getItem('sr_admin_settings');
         if (stored) {
             setSettings(JSON.parse(stored));
+        } else {
+            localStorage.setItem('sr_admin_settings', JSON.stringify(defaultSettings));
         }
     }, []);
 
     const handleChange = (e) => {
-        setSettings({ ...settings, [e.target.name]: e.target.value });
-        setSaved(false);
+        const { name, value } = e.target;
+        setSettings(prev => ({ ...prev, [name]: value }));
+        setSaveSuccess(false);
     };
 
     const handleSave = (e) => {
         e.preventDefault();
-        localStorage.setItem('sr_admin_settings', JSON.stringify(settings));
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+        setIsSaving(true);
+        // Simulate network delay for realistic feel
+        setTimeout(() => {
+            localStorage.setItem('sr_admin_settings', JSON.stringify(settings));
+            setIsSaving(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        }, 800);
     };
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
-            <h1 className="text-3xl font-heading font-bold text-[var(--color-primary-green)] mb-6 border-b border-gray-200 pb-4">Store Settings</h1>
-
-            <form onSubmit={handleSave} className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 space-y-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary-gold)]/10 rounded-full blur-2xl translate-x-10 -translate-y-10"></div>
-
-                {saved && (
-                    <div className="bg-green-50 text-green-600 p-4 rounded-xl font-bold flex items-center justify-center animate-in fade-in zoom-in border border-green-200">
-                        Settings successfully saved to LocalStorage!
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                    <div>
-                        <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Business Phone</label>
-                        <input
-                            type="text"
-                            name="phone"
-                            value={settings.phone}
-                            onChange={handleChange}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-[var(--color-primary-green)] focus:ring-1 focus:ring-[var(--color-primary-green)] transition-all font-medium text-gray-800"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Business Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={settings.email}
-                            onChange={handleChange}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-[var(--color-primary-green)] focus:ring-1 focus:ring-[var(--color-primary-green)] transition-all font-medium text-gray-800"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">WhatsApp Number</label>
-                        <input
-                            type="text"
-                            name="whatsapp"
-                            value={settings.whatsapp}
-                            onChange={handleChange}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-[var(--color-primary-green)] focus:ring-1 focus:ring-[var(--color-primary-green)] transition-all font-medium text-gray-800"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Free Shipping Threshold (₹)</label>
-                        <input
-                            type="number"
-                            name="freeShippingThreshold"
-                            value={settings.freeShippingThreshold}
-                            onChange={handleChange}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-[var(--color-primary-green)] focus:ring-1 focus:ring-[var(--color-primary-green)] transition-all font-bold text-[var(--color-primary-green)]"
-                        />
-                    </div>
-                    <div className="md:col-span-2">
-                        <label className="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Store Address</label>
-                        <textarea
-                            name="address"
-                            value={settings.address}
-                            onChange={handleChange}
-                            rows="3"
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:border-[var(--color-primary-green)] focus:ring-1 focus:ring-[var(--color-primary-green)] transition-all font-medium text-gray-800 resize-none"
-                        ></textarea>
-                    </div>
+        <div className="space-y-6 max-w-4xl mx-auto pb-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-gray-200 pb-4">
+                <div>
+                    <h1 className="text-3xl font-heading font-bold text-[var(--color-primary-green)]">Store Settings</h1>
+                    <p className="text-sm text-gray-500 mt-1">Configure global store details, contact info, and active banners.</p>
                 </div>
+            </div>
 
-                <div className="flex justify-end border-t border-gray-100 pt-6 mt-8 relative z-10">
-                    <button type="submit" className="flex items-center gap-2 px-8 py-4 bg-[var(--color-primary-green)] text-white rounded-xl font-bold hover:bg-[var(--color-secondary-green)] transition-all shadow-md hover:shadow-lg hover:-translate-y-1">
-                        <Save size={20} /> Save Configuration
-                    </button>
-                </div>
-            </form>
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative">
+                {/* Visual Header */}
+                <div className="h-2 w-full bg-gradient-to-r from-[var(--color-primary-green)] to-[var(--color-primary-gold)]"></div>
+
+                <form onSubmit={handleSave} className="p-6 md:p-8 space-y-8">
+
+                    {/* General Contact Info */}
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+                            <h2 className="text-lg font-bold text-[var(--color-primary-green)] flex items-center gap-2">
+                                <Phone size={20} className="text-[#C6A75E]" /> Contact Information
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2">Business Phone Line</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold"><Phone size={16} /></span>
+                                    <input
+                                        type="text"
+                                        name="businessPhone"
+                                        value={settings.businessPhone}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all font-medium text-gray-800"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2">WhatsApp Order Number</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 font-bold"><MessageCircle size={16} /></span>
+                                    <input
+                                        type="text"
+                                        name="whatsappNumber"
+                                        value={settings.whatsappNumber}
+                                        onChange={handleChange}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all font-medium text-gray-800"
+                                    />
+                                    <p className="text-xs text-gray-400 mt-2">Floating WhatsApp button routes here.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2">Physical Store Address</label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-[18px] text-gray-400 font-bold"><MapPin size={16} /></span>
+                                <textarea
+                                    name="businessAddress"
+                                    value={settings.businessAddress}
+                                    onChange={handleChange}
+                                    rows="3"
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all font-medium text-gray-800 resize-none"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* E-Commerce Operations */}
+                    <div className="space-y-6 pt-6 border-t border-gray-100">
+                        <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+                            <h2 className="text-lg font-bold text-[var(--color-primary-green)] flex items-center gap-2">
+                                <Truck size={20} className="text-[#C6A75E]" /> E-Commerce Operations
+                            </h2>
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2">Free Shipping Threshold (Amount in ₹)</label>
+                            <div className="relative max-w-sm">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                <input
+                                    type="number"
+                                    name="freeShippingThreshold"
+                                    value={settings.freeShippingThreshold}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all font-medium text-gray-800"
+                                />
+                            </div>
+                            <p className="text-xs text-gray-400 mt-2">Orders above this amount won't charge standard shipping.</p>
+                        </div>
+                    </div>
+
+                    {/* Visual UI Elements */}
+                    <div className="space-y-6 pt-6 border-t border-gray-100">
+                        <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+                            <h2 className="text-lg font-bold text-[var(--color-primary-green)] flex items-center gap-2">
+                                <LayoutTemplate size={20} className="text-[#C6A75E]" /> Site Banners
+                            </h2>
+                        </div>
+                        <div>
+                            <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2">Global Announcement Banner</label>
+                            <input
+                                type="text"
+                                name="bannerText"
+                                value={settings.bannerText}
+                                onChange={handleChange}
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--color-primary-green)]/20 focus:border-[var(--color-primary-green)] outline-none transition-all font-medium text-gray-800"
+                            />
+                            <p className="text-xs text-gray-400 mt-2">Appears at the very top of the website on every page.</p>
+                        </div>
+                    </div>
+
+                    {/* Action Footer */}
+                    <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
+                        <div>
+                            {saveSuccess && (
+                                <span className="flex items-center gap-1 text-sm font-bold text-green-600 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    <CheckCircle2 size={16} /> Saved Successfully
+                                </span>
+                            )}
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isSaving}
+                            className={`flex items-center gap-2 px-8 py-3 bg-[var(--color-primary-green)] text-white rounded-xl font-bold shadow-md transition-all ${isSaving ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--color-secondary-green)] hover:-translate-y-0.5'}`}
+                        >
+                            {isSaving ? (
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <Save size={18} />
+                            )}
+                            {isSaving ? 'Saving...' : 'Save Settings'}
+                        </button>
+                    </div>
+
+                </form>
+            </div>
         </div>
     );
 };

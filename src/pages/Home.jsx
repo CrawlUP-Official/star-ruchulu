@@ -4,12 +4,32 @@ import ComboSection from '../components/ComboSection';
 import TestimonialSection from '../components/TestimonialSection';
 import InstagramGallery from '../components/InstagramGallery';
 import SubscriptionForm from '../components/SubscriptionForm';
+import { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
-import productsData from '../data/products.json';
+import api from '../services/api';
 import { Leaf, Award, Recycle, Truck } from 'lucide-react';
 
 const Home = () => {
-    const bestSellers = productsData.filter(p => p.isBestSeller).slice(0, 4);
+    const [bestSellers, setBestSellers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchBestSellers = async () => {
+            try {
+                const response = await api.get('/products');
+                // Filter best sellers on client side
+                const sellers = response.data.filter(p => p.isBestSeller).slice(0, 4);
+                setBestSellers(sellers);
+                setIsLoading(false);
+            } catch (err) {
+                setError(err.response?.data?.message || 'Failed to load best sellers. Please try again later.');
+                setIsLoading(false);
+            }
+        };
+
+        fetchBestSellers();
+    }, []);
 
     const regionals = [
         { name: 'Palnadu', image: '/images/palnadu-special.jpg', color: 'bg-red-900' },
@@ -114,11 +134,30 @@ const Home = () => {
                     </div>
 
                     <div className="flex justify-start md:grid md:grid-cols-4 gap-4 md:gap-8 overflow-x-auto pb-8 snap-x snap-mandatory hide-scroll-bar -mx-4 px-4 md:mx-0 md:px-0">
-                        {bestSellers.map(product => (
-                            <div key={product.id} className="flex-none w-[80%] sm:w-[45%] md:w-auto snap-center">
-                                <ProductCard product={product} />
+                        {isLoading ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="flex-none w-[80%] sm:w-[45%] md:w-auto snap-center animate-pulse">
+                                    <div className="bg-gray-200 aspect-square rounded-2xl mb-4"></div>
+                                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                                    <div className="h-10 bg-gray-200 rounded-full w-full"></div>
+                                </div>
+                            ))
+                        ) : error ? (
+                            <div className="col-span-full text-center py-10 bg-red-50 text-red-500 rounded-2xl border border-red-100 w-full">
+                                {error}
                             </div>
-                        ))}
+                        ) : bestSellers.length > 0 ? (
+                            bestSellers.map(product => (
+                                <div key={product.id} className="flex-none w-[80%] sm:w-[45%] md:w-auto snap-center">
+                                    <ProductCard product={product} />
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-10 bg-gray-50 text-gray-500 rounded-2xl border border-gray-100 w-full">
+                                No best sellers currently available.
+                            </div>
+                        )}
                     </div>
                     <div className="mt-10 text-center md:hidden">
                         <Link to="/shop" className="inline-block px-8 py-4 border-2 border-[var(--color-primary-green)] text-[var(--color-primary-green)] rounded-full font-bold hover:bg-[var(--color-primary-green)] hover:text-white transition-colors">

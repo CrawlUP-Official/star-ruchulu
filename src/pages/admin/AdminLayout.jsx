@@ -8,14 +8,14 @@ const AdminLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
-        const isLogged = localStorage.getItem("sr_admin_logged");
+        const isLogged = localStorage.getItem("sr_admin_auth");
         if (!isLogged) {
             navigate('/admin.in/login');
         }
     }, [navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem("sr_admin_logged");
+        localStorage.removeItem("sr_admin_auth");
         navigate('/admin.in/login');
     };
 
@@ -24,6 +24,8 @@ const AdminLayout = () => {
         { path: '/admin.in/products', name: 'Products', icon: <Package size={20} /> },
         { path: '/admin.in/orders', name: 'Orders', icon: <ShoppingCart size={20} /> },
         { path: '/admin.in/customers', name: 'Customers', icon: <Users size={20} /> },
+        { path: '/admin.in/subscriptions', name: 'Subscriptions', icon: <Package size={20} /> },
+        { path: '/admin.in/contact-messages', name: 'Messages', icon: <Users size={20} /> },
         { path: '/admin.in/settings', name: 'Settings', icon: <Settings size={20} /> },
     ];
 

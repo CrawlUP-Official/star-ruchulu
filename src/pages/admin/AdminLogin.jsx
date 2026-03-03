@@ -11,7 +11,7 @@ const AdminLogin = () => {
     const handleLogin = (e) => {
         e.preventDefault();
         if (username === 'admin' && password === 'admin123') {
-            localStorage.setItem("sr_admin_logged", "true");
+            localStorage.setItem("sr_admin_auth", "true");
             navigate('/admin.in/dashboard');
         } else {
             setError('Invalid credentials');
