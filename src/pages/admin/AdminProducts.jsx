@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Plus, Edit2, Trash2, Search, X, Package } from 'lucide-react';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const AdminProducts = () => {
     const [products, setProducts] = useState([]);
@@ -8,6 +9,7 @@ const AdminProducts = () => {
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     const initialFormState = {
         id: '', name: '', category: 'Veg Pickles', region: 'Andhra', spiceLevel: 3,
@@ -57,13 +59,13 @@ const AdminProducts = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            try {
-                await api.delete(`/products/${id}`);
-                await fetchProducts();
-            } catch (err) {
-                alert('Failed to delete product');
-            }
+        try {
+            await api.delete(`/products/${id}`);
+            setProducts(prev => prev.filter(p => p.id !== id));
+        } catch (err) {
+            console.error('Delete failed:', err.response?.data || err.message);
+            alert('Failed to delete product: ' + (err.response?.data?.message || err.message));
+            await fetchProducts();
         }
     };
 
@@ -116,9 +118,9 @@ const AdminProducts = () => {
             }
 
             if (isEditing) {
-                await api.put(`/products/${formData.id}`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+                await api.put(`/products/${formData.id}`, payload);
             } else {
-                await api.post('/products', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
+                await api.post('/products', payload);
             }
             await fetchProducts();
             setIsModalOpen(false);
@@ -241,7 +243,7 @@ const AdminProducts = () => {
                                             <button onClick={() => openEditModal(product)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-bold flex items-center gap-1 text-sm border border-transparent hover:border-blue-100">
                                                 <Edit2 size={16} /> <span className="hidden xl:inline">Edit</span>
                                             </button>
-                                            <button onClick={() => handleDelete(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-bold flex items-center gap-1 text-sm border border-transparent hover:border-red-100">
+                                            <button onClick={() => setDeleteTarget(product.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-bold flex items-center gap-1 text-sm border border-transparent hover:border-red-100">
                                                 <Trash2 size={16} /> <span className="hidden xl:inline">Delete</span>
                                             </button>
                                         </div>
@@ -358,18 +360,29 @@ const AdminProducts = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
 
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                            <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">Cancel</button>
-                            <button form="productForm" type="submit" className="px-5 py-2.5 bg-[var(--color-primary-green)] text-[var(--color-primary-gold)] font-bold rounded-xl hover:bg-[var(--color-secondary-green)] shadow-md transition-colors">
-                                {isEditing ? 'Save Changes' : 'Create Product'}
-                            </button>
+                                <div className="pt-4 flex justify-end gap-3 mt-6 border-t border-gray-100 pb-2">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-200 rounded-xl transition-colors">Cancel</button>
+                                    <button type="submit" className="px-5 py-2.5 bg-[var(--color-primary-green)] text-[var(--color-primary-gold)] font-bold rounded-xl hover:bg-[var(--color-secondary-green)] shadow-md transition-colors">
+                                        {isEditing ? 'Save Changes' : 'Create Product'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => handleDelete(deleteTarget)}
+                title="Delete Product"
+                message="Are you sure you want to permanently delete this product? All associated data (weights, order items) will be removed. This action cannot be undone."
+                confirmText="Yes, Delete"
+                cancelText="No, Cancel"
+            />
         </div>
     );
 };

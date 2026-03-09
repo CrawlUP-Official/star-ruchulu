@@ -39,9 +39,31 @@ const updateOrderStatus = async (req, res, next) => {
     }
 };
 
+const deleteOrder = async (req, res, next) => {
+    try {
+        const result = await orderService.deleteOrder(req.params.orderId);
+        res.json(result);
+    } catch (error) {
+        res.status(400);
+        next(error);
+    }
+};
+
+const getOrderTracking = async (req, res, next) => {
+    try {
+        const result = await orderService.getOrderTracking(req.params.orderId);
+        res.json(result);
+    } catch (error) {
+        res.status(404);
+        next(error);
+    }
+};
+
 module.exports = {
     createOrder,
     getOrderById,
     getOrders,
-    updateOrderStatus
+    updateOrderStatus,
+    deleteOrder,
+    getOrderTracking
 };

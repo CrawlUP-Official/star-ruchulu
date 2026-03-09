@@ -23,4 +23,14 @@ const getSubscriptions = async (req, res, next) => {
     }
 };
 
-module.exports = { subscribe, getSubscriptions };
+const deleteSubscription = async (req, res, next) => {
+    try {
+        const result = await subscriptionService.deleteSubscription(req.params.id);
+        res.json(result);
+    } catch (error) {
+        res.status(400);
+        next(error);
+    }
+};
+
+module.exports = { subscribe, getSubscriptions, deleteSubscription };

@@ -4,15 +4,23 @@ import ComboSection from '../components/ComboSection';
 import TestimonialSection from '../components/TestimonialSection';
 import InstagramGallery from '../components/InstagramGallery';
 import SubscriptionForm from '../components/SubscriptionForm';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ProductCard from '../components/ProductCard';
 import api from '../services/api';
-import { Leaf, Award, Recycle, Truck } from 'lucide-react';
+import { Leaf, Award, Recycle, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Home = () => {
     const [bestSellers, setBestSellers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const scrollContainerRef = useRef(null);
+
+    const scrollLeft = () => {
+        if (scrollContainerRef.current) scrollContainerRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+    };
+    const scrollRight = () => {
+        if (scrollContainerRef.current) scrollContainerRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+    };
 
     useEffect(() => {
         const fetchBestSellers = async () => {
@@ -65,10 +73,10 @@ const Home = () => {
                     <p className="text-sm min-[360px]:text-base md:text-2xl text-[var(--color-text-secondary)] font-body mb-8 md:mb-10 max-w-2xl drop-shadow-sm leading-relaxed">
                         Handcrafted pickles, traditional sweets, and crunchy snacks made with love from the kitchens of Palnadu.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start items-center md:items-start w-full max-w-[95vw] overflow-hidden">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-start items-center md:items-start w-full relative z-20">
                         <Link
                             to="/shop"
-                            className="px-4 py-3 md:px-8 md:py-4 w-full sm:w-auto bg-[var(--color-primary-green)] hover:bg-[var(--color-secondary-green)] text-white font-bold rounded-xl text-sm min-[360px]:text-base md:text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
+                            className="px-4 py-3 md:px-8 md:py-4 w-full sm:w-auto bg-[var(--color-primary-green)] hover:bg-[var(--color-secondary-green)] text-white font-bold rounded-xl text-sm min-[360px]:text-base md:text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center relative z-20"
                         >
                             Shop Now
                         </Link>
@@ -76,7 +84,7 @@ const Home = () => {
                             href="https://wa.me/919876543210?text=I want to order from Star Ruchulu"
                             target="_blank"
                             rel="noreferrer"
-                            className="px-4 py-3 md:px-8 md:py-4 w-full sm:w-auto bg-white border border-[var(--color-primary-green)] text-[var(--color-primary-green)] hover:bg-gray-50 font-bold rounded-xl text-xs min-[360px]:text-sm md:text-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center whitespace-normal break-words leading-tight"
+                            className="px-4 py-3 md:px-8 md:py-4 w-full sm:w-auto bg-white border border-[var(--color-primary-green)] text-[var(--color-primary-green)] hover:bg-gray-50 font-bold rounded-xl text-xs min-[360px]:text-sm md:text-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center whitespace-normal break-words leading-tight relative z-20"
                         >
                             Order on WhatsApp
                         </a>
@@ -85,7 +93,7 @@ const Home = () => {
             </section>
 
             {/* Regional Specialties */}
-            <section className="py-12 md:py-20 bg-[var(--color-bg-white)]">
+            <section className="py-8 md:py-12 bg-[var(--color-bg-white)]">
                 <div className="container mx-auto px-4 md:px-8">
                     <div className="text-center mb-8 md:mb-16">
                         <h2 className="text-2xl md:text-5xl font-heading font-bold text-[var(--color-primary-green)] mb-3 md:mb-4">Flavors by Region</h2>
@@ -119,48 +127,56 @@ const Home = () => {
             <CategoryGrid />
 
             {/* Best Sellers */}
-            <section className="py-12 md:py-24 bg-[var(--color-bg-white)] relative">
+            <section className="py-8 md:py-12 bg-[var(--color-bg-white)] relative overflow-hidden">
                 <div className="container mx-auto px-4 md:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-16">
-                        <div className="text-center md:text-left w-full">
-                            <h2 className="text-2xl md:text-5xl font-heading font-bold text-[var(--color-primary-green)] mb-3 md:mb-4">Our Best Sellers</h2>
-                            <p className="text-gray-600 font-body text-sm md:text-lg max-w-xl mx-auto md:mx-0">
-                                The most loved recipes that keep our customers coming back for more. Must-try for first timers!
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12">
+                        <div className="text-center md:text-left w-full md:w-auto">
+                            <h2 className="text-2xl md:text-4xl font-heading font-bold text-[var(--color-primary-green)] mb-2 md:mb-3">Our Best Sellers</h2>
+                            <p className="text-gray-600 font-body text-sm md:text-base max-w-xl mx-auto md:mx-0">
+                                The most loved recipes that keep our customers coming back for more.
                             </p>
                         </div>
-                        <Link to="/shop" className="hidden md:inline-flex mt-6 md:mt-0 px-6 py-3 border-2 border-[var(--color-primary-green)] text-[var(--color-primary-green)] rounded-full font-bold hover:bg-[var(--color-primary-green)] hover:text-white transition-colors">
-                            View Entire Menu
-                        </Link>
+                        <div className="hidden md:flex items-center gap-2 mt-4 md:mt-0">
+                            <button onClick={scrollLeft} className="p-2 border border-gray-300 text-gray-500 rounded-full hover:bg-[var(--color-primary-green)] hover:text-white hover:border-transparent transition-colors">
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button onClick={scrollRight} className="p-2 border border-gray-300 text-gray-500 rounded-full hover:bg-[var(--color-primary-green)] hover:text-white hover:border-transparent transition-colors">
+                                <ChevronRight size={18} />
+                            </button>
+                            <Link to="/shop" className="ml-3 px-5 py-2 border-2 border-[var(--color-primary-green)] text-[var(--color-primary-green)] hover:bg-[var(--color-primary-green)] hover:text-white rounded-full font-bold transition-colors text-sm">
+                                View All
+                            </Link>
+                        </div>
                     </div>
 
-                    <div className="flex justify-start md:grid md:grid-cols-4 gap-4 md:gap-8 overflow-x-auto pb-8 snap-x snap-mandatory hide-scroll-bar -mx-4 px-4 md:mx-0 md:px-0">
+                    <div ref={scrollContainerRef} className="flex overflow-x-auto gap-4 md:gap-5 pb-6 snap-x snap-mandatory hide-scroll-bar scroll-smooth">
                         {isLoading ? (
                             Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="flex-none w-[80%] sm:w-[45%] md:w-auto snap-center animate-pulse">
+                                <div key={i} className="flex-none w-[65%] sm:w-[45%] md:w-[240px] snap-center animate-pulse">
                                     <div className="bg-gray-200 aspect-square rounded-2xl mb-4"></div>
-                                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
                                     <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                                    <div className="h-10 bg-gray-200 rounded-full w-full"></div>
+                                    <div className="h-9 bg-gray-200 rounded-full w-full"></div>
                                 </div>
                             ))
                         ) : error ? (
-                            <div className="col-span-full text-center py-10 bg-red-50 text-red-500 rounded-2xl border border-red-100 w-full">
+                            <div className="text-center py-10 bg-red-50 text-red-500 rounded-2xl border border-red-100 w-full">
                                 {error}
                             </div>
                         ) : bestSellers.length > 0 ? (
                             bestSellers.map(product => (
-                                <div key={product.id} className="flex-none w-[80%] sm:w-[45%] md:w-auto snap-center">
+                                <div key={product.id} className="flex-none w-[65%] sm:w-[45%] md:w-[240px] snap-center">
                                     <ProductCard product={product} />
                                 </div>
                             ))
                         ) : (
-                            <div className="col-span-full text-center py-10 bg-gray-50 text-gray-500 rounded-2xl border border-gray-100 w-full">
+                            <div className="text-center py-10 bg-gray-50 text-gray-500 rounded-2xl border border-gray-100 w-full">
                                 No best sellers currently available.
                             </div>
                         )}
                     </div>
-                    <div className="mt-10 text-center md:hidden">
-                        <Link to="/shop" className="inline-block px-8 py-4 border-2 border-[var(--color-primary-green)] text-[var(--color-primary-green)] rounded-full font-bold hover:bg-[var(--color-primary-green)] hover:text-white transition-colors">
+                    <div className="mt-6 text-center md:hidden">
+                        <Link to="/shop" className="inline-block px-6 py-2.5 border-2 border-[var(--color-primary-green)] text-[var(--color-primary-green)] rounded-full font-bold hover:bg-[var(--color-primary-green)] hover:text-white transition-colors text-sm">
                             View Entire Menu
                         </Link>
                     </div>

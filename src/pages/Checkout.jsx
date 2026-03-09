@@ -4,20 +4,24 @@ import { getCart, getCartTotal, clearCart } from '../utils/cartUtils';
 import { CheckCircle, Lock, ShieldCheck, MapPin, Truck, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
+
 const Checkout = () => {
     const navigate = useNavigate();
     const cartItems = getCart();
     const total = getCartTotal();
     const deliveryCharge = total >= 999 || total === 0 ? 0 : 60;
+    const { user } = useContext(AuthContext);
 
     const [formData, setFormData] = useState({
-        fullName: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        state: 'Andhra Pradesh',
-        pincode: '',
+        fullName: user ? user.name : 'Test User',
+        phone: user ? user.phone : '9876543210',
+        email: user ? user.email : 'test@example.com',
+        address: '123 Fake St',
+        city: 'Hyderabad',
+        state: 'Telangana',
+        pincode: '500001',
         paymentMethod: 'cod',
     });
 

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Mail, Search, Trash2, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const AdminSubscriptions = () => {
     const [subscriptions, setSubscriptions] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     const fetchSubscriptions = async () => {
         try {
@@ -25,8 +27,15 @@ const AdminSubscriptions = () => {
         fetchSubscriptions();
     }, []);
 
-    const handleDelete = (id) => {
-        alert("Delete not implemented in backend Phase 2");
+    const handleDelete = async (id) => {
+        try {
+            await api.delete(`/subscribe/${id}`);
+            setSubscriptions(prev => prev.filter(s => s.id !== id));
+        } catch (err) {
+            console.error('Subscription delete failed:', err.response?.data || err.message);
+            alert('Failed to delete subscriber: ' + (err.response?.data?.message || err.message));
+            await fetchSubscriptions();
+        }
     };
 
     const filteredSubs = subscriptions.filter(s =>
@@ -92,7 +101,7 @@ const AdminSubscriptions = () => {
                                     </td>
                                     <td className="p-4 pr-6 text-right">
                                         <button
-                                            onClick={() => handleDelete(sub.id)}
+                                            onClick={() => setDeleteTarget(sub.id)}
                                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100 inline-flex"
                                             title="Delete subscriber"
                                         >
@@ -112,6 +121,17 @@ const AdminSubscriptions = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => handleDelete(deleteTarget)}
+                title="Delete Subscriber"
+                message="Are you sure you want to permanently delete this subscriber? This action cannot be undone."
+                confirmText="Yes, Delete"
+                cancelText="No, Cancel"
+            />
         </div>
     );
 };

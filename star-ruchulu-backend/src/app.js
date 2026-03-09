@@ -7,6 +7,8 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const comboRoutes = require('./routes/comboRoutes');
+const customerRoutes = require('./routes/customerRoutes');
 
 // Import middlewares
 const errorHandler = require('./middleware/errorHandler');
@@ -31,6 +33,19 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/contact', contactRoutes);
 app.use('/api/v1/subscribe', subscriptionRoutes);
+app.use('/api/v1/combos', comboRoutes);
+app.use('/api/v1/customers', customerRoutes);
+
+const brevoEmailService = require('./services/brevoEmailService');
+app.get('/test-email', async (req, res) => {
+    try {
+        await brevoEmailService.sendEmail('pawankalyanjpk@gmail.com', 'Star Ruchulu Email System Test', 'Your Brevo email integration is working successfully.');
+        res.send('Test email sent successfully using Brevo API!');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Email failed: ' + err.message);
+    }
+});
 
 // Fallback & Error Catchers
 app.use(notFound);

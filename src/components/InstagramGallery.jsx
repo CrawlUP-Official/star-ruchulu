@@ -9,8 +9,8 @@ const galleryImages = [
 
 const InstagramGallery = () => {
     return (
-        <section className="py-16 bg-white overflow-hidden">
-            <div className="container mx-auto px-4 md:px-8 mb-8 flex items-center justify-between">
+        <section className="py-8 md:py-12 bg-white overflow-hidden">
+            <div className="container mx-auto px-4 md:px-8 mb-6 flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl md:text-3xl font-heading font-bold text-[var(--color-primary-green)] flex items-center gap-3">
                         <Instagram className="text-[var(--color-primary-green)]" /> Follow Us @StarRuchulu

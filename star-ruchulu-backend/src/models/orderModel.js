@@ -78,6 +78,31 @@ const Order = {
     updateStatus: async (orderIdString, newStatus) => {
         const [result] = await db.query('UPDATE orders SET order_status = ? WHERE order_id = ?', [newStatus, orderIdString]);
         return result.affectedRows > 0;
+    },
+
+    delete: async (orderIdString) => {
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const [orders] = await connection.query('SELECT id FROM orders WHERE order_id = ?', [orderIdString]);
+            if (orders.length === 0) {
+                await connection.rollback();
+                return false;
+            }
+            const orderRef = orders[0].id;
+
+            await connection.query('DELETE FROM order_items WHERE order_ref = ?', [orderRef]);
+            const [result] = await connection.query('DELETE FROM orders WHERE id = ?', [orderRef]);
+
+            await connection.commit();
+            return result.affectedRows > 0;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 };
 

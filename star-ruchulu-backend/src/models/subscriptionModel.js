@@ -17,6 +17,11 @@ const Subscription = {
     findAll: async () => {
         const [rows] = await db.query('SELECT * FROM subscriptions ORDER BY created_at DESC');
         return rows;
+    },
+
+    delete: async (id) => {
+        const [result] = await db.query('DELETE FROM subscriptions WHERE id = ?', [id]);
+        return result.affectedRows > 0;
     }
 };
 

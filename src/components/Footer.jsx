@@ -9,9 +9,9 @@ const Footer = () => {
         setOpenSection(openSection === section ? null : section);
     };
     return (
-        <footer className="bg-[var(--color-footer-bg)] text-[#F5F5F5] pt-16 pb-24 md:pb-12 border-t-2 border-white/10">
+        <footer className="bg-[var(--color-footer-bg)] text-[#F5F5F5] pt-16 pb-12 border-t-2 border-white/10">
             <div className="container mx-auto px-4 md:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Brand Info */}
                     <div>
                         <h3 className="text-3xl font-heading font-bold text-[var(--color-primary-gold)] mb-6">Star Ruchulu</h3>

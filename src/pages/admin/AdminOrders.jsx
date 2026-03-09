@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { ShoppingCart, Search, Eye, X, CheckCircle, Clock, Truck, XCircle, MapPin } from 'lucide-react';
+import { ShoppingCart, Search, Eye, X, CheckCircle, Clock, Truck, XCircle, MapPin, Trash2 } from 'lucide-react';
 import api from '../../services/api';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
     const [statusFilter, setStatusFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     const fetchOrders = async () => {
         try {
@@ -47,6 +49,20 @@ const AdminOrders = () => {
             }
         } catch (err) {
             alert('Failed to update status');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await api.delete(`/orders/${id}`);
+            setOrders(prev => prev.filter(o => o.id !== id));
+            if (selectedOrder && selectedOrder.id === id) {
+                setSelectedOrder(null);
+            }
+        } catch (err) {
+            console.error('Order delete failed:', err.response?.data || err.message);
+            alert('Failed to delete order: ' + (err.response?.data?.message || err.message));
+            await fetchOrders();
         }
     };
 
@@ -149,13 +165,17 @@ const AdminOrders = () => {
                                                 onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                                                 className={`text-xs font-bold rounded-lg border px-2 py-1.5 outline-none transition-colors cursor-pointer
                                                     ${order.status === 'Processing' ? 'bg-yellow-50 border-yellow-200 text-yellow-700 focus:ring-yellow-500/20' : ''}
+                                                    ${order.status === 'Packing' ? 'bg-orange-50 border-orange-200 text-orange-700 focus:ring-orange-500/20' : ''}
                                                     ${order.status === 'Shipped' ? 'bg-blue-50 border-blue-200 text-blue-700 focus:ring-blue-500/20' : ''}
+                                                    ${order.status === 'Out for Delivery' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 focus:ring-indigo-500/20' : ''}
                                                     ${order.status === 'Delivered' ? 'bg-green-50 border-green-200 text-green-700 focus:ring-green-500/20' : ''}
                                                     ${order.status === 'Cancelled' ? 'bg-red-50 border-red-200 text-red-700 focus:ring-red-500/20' : ''}
                                                 `}
                                             >
                                                 <option value="Processing">Processing</option>
+                                                <option value="Packing">Packing</option>
                                                 <option value="Shipped">Shipped</option>
+                                                <option value="Out for Delivery">Out for Delivery</option>
                                                 <option value="Delivered">Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
                                             </select>
@@ -167,6 +187,12 @@ const AdminOrders = () => {
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors"
                                         >
                                             <Eye size={14} /> Details
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleteTarget(order.id)}
+                                            className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition-colors"
+                                        >
+                                            <Trash2 size={14} />
                                         </button>
                                     </td>
                                 </tr>
@@ -270,6 +296,17 @@ const AdminOrders = () => {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => handleDelete(deleteTarget)}
+                title="Delete Order"
+                message="Are you sure you want to permanently delete this order? All order items will be removed. This action cannot be undone."
+                confirmText="Yes, Delete"
+                cancelText="No, Cancel"
+            />
         </div>
     );
 };

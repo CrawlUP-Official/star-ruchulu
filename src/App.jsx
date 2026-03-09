@@ -13,6 +13,10 @@ import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
+import Login from './pages/account/Login';
+import Signup from './pages/account/Signup';
+import Dashboard from './pages/account/Dashboard';
+
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 
 // Admin Imports
@@ -56,7 +60,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative pb-8">
+    <div className="min-h-screen flex flex-col relative pb-0">
       <ScrollToTop />
       <Navbar />
       <main className="flex-grow">
@@ -70,6 +74,11 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+
+            {/* Customer Account Routes */}
+            <Route path="/account/login" element={<Login />} />
+            <Route path="/account/signup" element={<Signup />} />
+            <Route path="/account/dashboard" element={<Dashboard />} />
           </Routes>
         </Suspense>
       </main>

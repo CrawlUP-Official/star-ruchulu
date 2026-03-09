@@ -114,7 +114,7 @@ const ProductDetails = () => {
                 </nav>
 
                 {/* Product Section */}
-                <div className="flex flex-col lg:flex-row gap-6 md:gap-12 bg-white rounded-3xl p-5 md:p-12 shadow-md border border-[var(--color-primary-gold)]/20 mb-10 md:mb-16 relative">
+                <div className="flex flex-col lg:flex-row gap-6 md:gap-8 bg-white rounded-3xl p-5 md:p-8 shadow-md border border-[var(--color-primary-gold)]/20 mb-10 md:mb-16 relative">
 
                     {/* Decorative element */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary-gold)]/10 rounded-bl-full pointer-events-none"></div>
@@ -261,7 +261,7 @@ const ProductDetails = () => {
                         </button>
                     </div>
 
-                    <div className="p-8 md:p-12">
+                    <div className="p-8 md:p-8">
                         {activeTab === 'description' && (
                             <div className="prose max-w-none text-gray-600 leading-relaxed font-body text-lg">
                                 <p className="mb-4">Experience the bold, fiery, and deeply comforting flavors of our {product.name}. Carefully prepared using a traditional recipe straight from the heart of {product.region}.</p>

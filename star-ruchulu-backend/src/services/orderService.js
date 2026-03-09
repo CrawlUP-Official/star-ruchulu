@@ -1,5 +1,6 @@
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
+const emailService = require('./emailService');
 
 const createOrder = async (orderPayload) => {
     const { items, ...orderData } = orderPayload;
@@ -35,6 +36,20 @@ const createOrder = async (orderPayload) => {
     // Delegate safely to Model for transactional database insert
     const savedOrder = await Order.create(orderData, items);
 
+    // Send beautiful order confirmation email (fire and forget)
+    emailService.sendOrderConfirmationEmail(orderData.email, {
+        orderId: savedOrder.orderId,
+        customerName: orderData.customer_name,
+        items: items,
+        totalAmount: calculatedTotal,
+        address: orderData.address,
+        city: orderData.city,
+        state: orderData.state,
+        pincode: orderData.pincode
+    }).catch(err => {
+        console.error('Order confirmation email failed:', err.message);
+    });
+
     return {
         ...savedOrder,
         total_amount: calculatedTotal,
@@ -54,14 +69,43 @@ const fetchAllOrders = async () => {
 
 const updateOrderStatus = async (orderIdString, newStatus) => {
     if (!newStatus) throw new Error('New status is required');
+    const order = await Order.findById(orderIdString);
+    if (!order) throw new Error('Order not found');
+
     const updated = await Order.updateStatus(orderIdString, newStatus);
     if (!updated) throw new Error('Order not found or status invalid');
+
+    // Dispatch tracking email
+    emailService.sendOrderStatusEmail(order.email, order.order_id || orderIdString, newStatus).catch(err => {
+        console.error('Order status email failed:', err.message);
+    });
+
     return { success: true, message: `Order status updated to ${newStatus}` };
+};
+
+const deleteOrder = async (orderIdString) => {
+    const deleted = await Order.delete(orderIdString);
+    if (!deleted) throw new Error('Order not found');
+    return { success: true, message: 'Order deleted successfully' };
+};
+
+const getOrderTracking = async (orderIdString) => {
+    const order = await Order.findById(orderIdString);
+    if (!order) throw new Error('Order not found');
+
+    // Determine timeline based on current status
+    return {
+        orderId: order.order_id,
+        currentStatus: order.order_status,
+        updatedAt: order.created_at // Simulating timestamp for now
+    };
 };
 
 module.exports = {
     createOrder,
     getOrderById,
     fetchAllOrders,
-    updateOrderStatus
+    updateOrderStatus,
+    deleteOrder,
+    getOrderTracking
 };

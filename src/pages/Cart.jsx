@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { getCart, removeFromCart, updateQuantity, getCartTotal } from '../utils/cartUtils';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import CheckoutAuthModal from '../components/CheckoutAuthModal';
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState(getCart());
     const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -23,6 +28,14 @@ const Cart = () => {
     const freeShippingThreshold = 999;
     const deliveryCharge = total >= freeShippingThreshold || total === 0 ? 0 : 60;
     const finalTotal = total + deliveryCharge;
+
+    const handleCheckoutClick = () => {
+        if (!user) {
+            setIsAuthModalOpen(true);
+        } else {
+            navigate('/checkout');
+        }
+    };
 
     if (cartItems.length === 0) {
         return (
@@ -179,7 +192,7 @@ const Cart = () => {
                             </div>
 
                             <button
-                                onClick={() => navigate('/checkout')}
+                                onClick={handleCheckoutClick}
                                 className="w-full py-3 md:py-4 px-4 md:px-6 bg-[var(--color-primary-gold)] text-gray-900 rounded-xl font-bold text-base md:text-lg hover:bg-yellow-400 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all flex justify-center items-center gap-2"
                             >
                                 Proceed to Checkout
@@ -197,6 +210,15 @@ const Cart = () => {
 
                 </div>
             </div>
+
+            <CheckoutAuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onAuthenticated={() => {
+                    setIsAuthModalOpen(false);
+                    navigate('/checkout');
+                }}
+            />
         </div>
     );
 };

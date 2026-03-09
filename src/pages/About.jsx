@@ -5,7 +5,7 @@ const About = () => {
     return (
         <div className="bg-white min-h-screen pt-4 pb-24">
             {/* Banner */}
-            <div className="bg-gray-900 text-white py-12 md:py-20 text-center relative overflow-hidden">
+            <div className="bg-gray-900 text-white py-8 md:py-12 text-center relative overflow-hidden">
                 <div className="absolute inset-0 z-0 opacity-40">
                     <img src="/images/andhra-food-hero.jpg" alt="About Hero" className="w-full h-full object-cover" />
                 </div>
@@ -46,7 +46,7 @@ const About = () => {
             </div>
 
             {/* Core Values */}
-            <div className="bg-[var(--color-bg-white)] py-12 md:py-20 border-y border-gray-100">
+            <div className="bg-[var(--color-bg-white)] py-8 md:py-12 border-y border-gray-100">
                 <div className="container mx-auto px-4 md:px-8">
                     <div className="text-center mb-8 md:mb-16">
                         <h2 className="text-2xl md:text-5xl font-heading font-bold text-[var(--color-primary-green)] mb-3 md:mb-4">Our Promise</h2>

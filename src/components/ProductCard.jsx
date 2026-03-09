@@ -73,6 +73,7 @@ const ProductCard = ({ product }) => {
                     alt={product.name}
                     className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
                     loading="lazy"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/images/placeholder.jpg"; }}
                 />
                 {/* Overlay for quick action on desktop */}
                 <div className={`absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 ${isHovered ? 'md:opacity-100' : ''} transition-opacity duration-300 hidden md:flex`}>

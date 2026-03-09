@@ -127,8 +127,21 @@ const Product = {
     },
 
     delete: async (id) => {
-        const [result] = await db.query('DELETE FROM products WHERE id = ?', [id]);
-        return result.affectedRows > 0;
+        const connection = await db.getConnection();
+        try {
+            await connection.beginTransaction();
+            await connection.query('DELETE FROM product_weights WHERE product_id = ?', [id]);
+            await connection.query('DELETE FROM order_items WHERE product_id = ?', [id]);
+            await connection.query('DELETE FROM combo_items WHERE product_id = ?', [id]);
+            const [result] = await connection.query('DELETE FROM products WHERE id = ?', [id]);
+            await connection.commit();
+            return result.affectedRows > 0;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 };
 

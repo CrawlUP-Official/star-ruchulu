@@ -3,11 +3,7 @@ import { Link } from 'react-router-dom';
 import { Gift, Plus, Minus } from 'lucide-react';
 import { getCart, addToCart, updateQuantity } from '../utils/cartUtils';
 
-const combos = [
-    { id: 1, name: 'Pickle Lovers Combo', description: 'Gongura + Avakaya + Tomato (250g each)', price: 799, originalPrice: 950, image: '/images/combo1.jpg', tag: 'Most Popular' },
-    { id: 2, name: 'Non-Veg Feast Combo', description: 'Chicken + Mutton + Prawns (250g each)', price: 1499, originalPrice: 1800, image: '/images/combo2.jpg', tag: 'Value Deal' },
-    { id: 3, name: 'Festival Sweet Box', description: 'Bobbatlu + Laddu + Ariselu (Special Box)', price: 899, originalPrice: 1100, image: '/images/combo3.jpg', tag: 'Gifting Special' },
-];
+import api from '../services/api';
 
 const ComboCard = ({ combo }) => {
     const [cartItem, setCartItem] = useState(null);
@@ -27,7 +23,7 @@ const ComboCard = ({ combo }) => {
         const comboProduct = {
             id: `combo-${combo.id}`,
             name: combo.name,
-            image: combo.image,
+            image: combo.image_url || combo.image,
             spiceLevel: 0,
             pricePerWeight: { "Combo": combo.price }
         };
@@ -41,7 +37,7 @@ const ComboCard = ({ combo }) => {
             </div>
 
             <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-6 mt-4">
-                <img src={combo.image} alt={combo.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700 bg-gray-100" onError={(e) => { e.target.onerror = null; e.target.src = "/images/placeholder.jpg"; }} />
+                <img src={combo.image_url || combo.image} alt={combo.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700 bg-gray-100" onError={(e) => { e.target.onerror = null; e.target.src = "/images/placeholder.jpg"; }} />
             </div>
 
             <h3 className="text-xl md:text-2xl font-bold font-heading text-[var(--color-text-primary)] mb-2 md:mb-3">{combo.name}</h3>
@@ -49,11 +45,11 @@ const ComboCard = ({ combo }) => {
 
             <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div>
-                    <span className="text-gray-400 line-through text-xs md:text-sm mr-2">₹{combo.originalPrice}</span>
+                    <span className="text-gray-400 line-through text-xs md:text-sm mr-2">₹{combo.original_price || combo.originalPrice}</span>
                     <span className="text-2xl md:text-3xl font-bold text-[var(--color-primary-green)]">₹{combo.price}</span>
                 </div>
                 <div className="bg-green-100 text-green-800 text-[10px] md:text-xs font-bold px-2 py-1 rounded">
-                    Save ₹{combo.originalPrice - combo.price}
+                    Save ₹{(combo.original_price || combo.originalPrice) - combo.price}
                 </div>
             </div>
 
@@ -86,8 +82,22 @@ const ComboCard = ({ combo }) => {
 };
 
 const ComboSection = () => {
+    const [combos, setCombos] = useState([]);
+
+    useEffect(() => {
+        const fetchCombos = async () => {
+            try {
+                const res = await api.get('/combos');
+                setCombos(res.data);
+            } catch (err) {
+                console.error("Failed to load combos", err);
+            }
+        };
+        fetchCombos();
+    }, []);
+
     return (
-        <section className="py-12 md:py-20 bg-[var(--color-bg-white)] overflow-hidden">
+        <section className="py-8 md:py-12 bg-[var(--color-bg-white)] overflow-hidden">
             <div className="container mx-auto px-4 md:px-8">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12">
                     <div className="max-w-xl text-center md:text-left">

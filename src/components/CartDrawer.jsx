@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, Trash2, Plus, Minus } from 'lucide-react';
 import { getCart, removeFromCart, updateQuantity, getCartTotal } from '../utils/cartUtils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
+import CheckoutAuthModal from './CheckoutAuthModal';
 
 const CartItem = React.memo(({ item, onRemove, onUpdateQuantity }) => {
     return (
@@ -48,6 +51,9 @@ const CartItem = React.memo(({ item, onRemove, onUpdateQuantity }) => {
 
 const CartDrawer = ({ isOpen, onClose }) => {
     const [cartItems, setCartItems] = useState(getCart());
+    const { user } = useContext(AuthContext);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     const handleCartUpdate = useCallback(() => {
         setCartItems(getCart());
@@ -133,17 +139,33 @@ const CartDrawer = ({ isOpen, onClose }) => {
                             >
                                 View Cart
                             </Link>
-                            <Link
-                                to="/checkout"
-                                onClick={onClose}
+                            <button
+                                onClick={() => {
+                                    if (!user) {
+                                        setIsAuthModalOpen(true);
+                                    } else {
+                                        onClose();
+                                        navigate('/checkout');
+                                    }
+                                }}
                                 className="w-full py-3 text-center font-bold bg-[var(--color-primary-green)] text-white hover:bg-[var(--color-secondary-green)] transition-all rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transform"
                             >
                                 Checkout
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 )}
             </div>
+
+            <CheckoutAuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                onAuthenticated={() => {
+                    setIsAuthModalOpen(false);
+                    onClose();
+                    navigate('/checkout');
+                }}
+            />
         </>
     );
 };

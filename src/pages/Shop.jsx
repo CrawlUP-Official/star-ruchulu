@@ -203,7 +203,7 @@ const Shop = () => {
                                 {error}
                             </div>
                         ) : products.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[400px]">
+                            <div className="bg-white rounded-2xl p-6 md:p-8 text-center shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[400px]">
                                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
                                     <Filter size={40} className="text-gray-400" />
                                 </div>

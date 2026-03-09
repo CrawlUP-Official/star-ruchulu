@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Search, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, ChevronDown, User } from 'lucide-react';
 import { getCartCount } from '../utils/cartUtils';
 import CartDrawer from './CartDrawer';
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -10,6 +12,7 @@ const Navbar = () => {
     const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
     const [cartCount, setCartCount] = useState(getCartCount());
+    const { user } = useContext(AuthContext);
     const [searchParams] = useSearchParams();
     const urlQuery = searchParams.get('search') || '';
 
@@ -119,6 +122,10 @@ const Navbar = () => {
                                     <Search size={20} className="md:w-5 md:h-5" />
                                 </button>
                             </form>
+
+                            <Link to="/account/dashboard" className="p-2 text-[var(--color-primary-green)] hover:text-[var(--color-primary-gold)] transition-colors relative" title="Account">
+                                <User size={24} />
+                            </Link>
 
                             <button
                                 className="p-2 text-[var(--color-primary-green)] hover:text-[var(--color-primary-gold)] transition-colors relative"

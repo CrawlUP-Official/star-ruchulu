@@ -1,44 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Users, Search, Eye, X, Mail, Phone, MapPin } from 'lucide-react';
+import { Users, Search, Eye, X, Mail, Phone, MapPin, Trash2 } from 'lucide-react';
 import api from '../../services/api';
+import ConfirmModal from '../../components/ConfirmModal';
 
 const AdminCustomers = () => {
     const [customers, setCustomers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     const fetchCustomersFromOrders = async () => {
         try {
-            const res = await api.get('/orders');
-            const orders = res.data;
-            const customerMap = {};
-
-            orders.forEach(o => {
-                const key = o.email;
-                if (!customerMap[key]) {
-                    customerMap[key] = {
-                        id: `C${o.id}`, // pseudo id
-                        name: o.customer_name,
-                        email: o.email,
-                        phone: o.phone,
-                        joined: o.created_at,
-                        totalOrders: 0,
-                        totalSpending: 0,
-                        address: `${o.address}, ${o.city}, ${o.state} ${o.pincode}`,
-                        status: 'Active'
-                    };
-                }
-                customerMap[key].totalOrders += 1;
-                customerMap[key].totalSpending += parseFloat(o.total_amount);
-                // track oldest order as joined date
-                if (new Date(o.created_at) < new Date(customerMap[key].joined)) {
-                    customerMap[key].joined = o.created_at;
-                }
-            });
-
-            setCustomers(Object.values(customerMap));
+            const res = await api.get('/customers');
+            setCustomers(res.data.customers.map(c => ({
+                id: c.id,
+                name: c.name,
+                email: c.email,
+                phone: c.phone,
+                joined: c.created_at,
+                totalOrders: c.total_orders,
+                totalSpending: parseFloat(c.total_spend)
+            })));
         } catch (error) {
-            console.error("Failed to fetch customers from orders", error);
+            console.error("Failed to fetch customers", error);
         }
     };
 
@@ -46,9 +30,26 @@ const AdminCustomers = () => {
         fetchCustomersFromOrders();
     }, []);
 
+    const handleDeleteCustomer = async (customer) => {
+        try {
+            // Backend will handle deleting all orders of the customer inside a transaction!
+            await api.delete(`/customers/${customer.id}`);
+
+            setCustomers(prev => prev.filter(c => c.email !== customer.email));
+            if (selectedCustomer && selectedCustomer.email === customer.email) {
+                setSelectedCustomer(null);
+            }
+            setDeleteTarget(null);
+        } catch (err) {
+            console.error('Customer delete failed:', err);
+            alert('Failed to delete customer: ' + (err.response?.data?.message || err.message));
+            await fetchCustomersFromOrders();
+        }
+    };
+
     const filteredCustomers = customers.filter(c => {
         const query = searchQuery.toLowerCase();
-        return c.name.toLowerCase().includes(query) || c.email.toLowerCase().includes(query) || c.id.toLowerCase().includes(query);
+        return c.name.toLowerCase().includes(query) || c.email.toLowerCase().includes(query) || c.id.toString().toLowerCase().includes(query);
     });
 
     return (
@@ -122,6 +123,12 @@ const AdminCustomers = () => {
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors"
                                         >
                                             <Eye size={14} /> Profile
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleteTarget(customer)}
+                                            className="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition-colors"
+                                        >
+                                            <Trash2 size={14} />
                                         </button>
                                     </td>
                                 </tr>
@@ -208,6 +215,17 @@ const AdminCustomers = () => {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => handleDeleteCustomer(deleteTarget)}
+                title="Delete Customer"
+                message={`Are you sure you want to permanently delete this customer and all their orders? This action cannot be undone.`}
+                confirmText="Yes, Delete"
+                cancelText="No, Cancel"
+            />
         </div>
     );
 };

@@ -1,4 +1,5 @@
 const Subscription = require('../models/subscriptionModel');
+const emailService = require('./emailService');
 
 const subscribeUser = async (email) => {
     if (!email) {
@@ -14,6 +15,11 @@ const subscribeUser = async (email) => {
     const couponCode = 'WELCOME10';
     await Subscription.create(email, couponCode);
 
+    // Send beautiful welcome email (fire and forget)
+    emailService.sendWelcomeEmail(email, couponCode).catch(err => {
+        console.error('Welcome email failed:', err.message);
+    });
+
     return {
         success: true,
         message: "Subscription active! Use code WELCOME10",
@@ -25,4 +31,10 @@ const fetchAllSubscriptions = async () => {
     return await Subscription.findAll();
 };
 
-module.exports = { subscribeUser, fetchAllSubscriptions };
+const deleteSubscription = async (id) => {
+    const deleted = await Subscription.delete(id);
+    if (!deleted) throw new Error('Subscription not found');
+    return { success: true, message: 'Subscription deleted successfully' };
+};
+
+module.exports = { subscribeUser, fetchAllSubscriptions, deleteSubscription };
